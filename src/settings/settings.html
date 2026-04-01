@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bun Everywhere - Settings</title>
+    <link rel="stylesheet" href="settings.css">
+</head>
+
+<body>
+    <div class="settings-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="title-section">
+                    <h1 class="title">Bun Everywhere Settings</h1>
+                    <span class="version" id="version">1.0.0</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Section 1: General -->
+            <section class="settings-section">
+                <h2 class="section-title">General</h2>
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <label class="setting-label" for="globalToggle">
+                            Enable Bun Everywhere
+                        </label>
+                        <p class="setting-description">
+                            Replace package manager commands on all websites
+                        </p>
+                    </div>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="globalToggle" class="toggle-input">
+                        <span class="toggle-slider"></span>
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <label class="setting-label" for="autoCopyToggle">
+                            Auto-copy on page load
+                        </label>
+                        <p class="setting-description">
+                            Automatically copy the first Bun command when a page loads
+                        </p>
+                    </div>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="autoCopyToggle" class="toggle-input">
+                        <span class="toggle-slider"></span>
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <label class="setting-label" for="indicatorToggle">
+                            Show visual indicator
+                        </label>
+                        <p class="setting-description">
+                            Highlight replaced commands with amber background
+                        </p>
+                    </div>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="indicatorToggle" class="toggle-input">
+                        <span class="toggle-slider"></span>
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <label class="setting-label" for="badgeToggle">
+                            Replacement count badge
+                        </label>
+                        <p class="setting-description">
+                            Show number of replacements on extension icon
+                        </p>
+                    </div>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="badgeToggle" class="toggle-input">
+                        <span class="toggle-slider"></span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 2: Package Manager Providers -->
+            <section class="settings-section">
+                <h2 class="section-title">Package Manager Providers</h2>
+                <p class="section-description">Replace commands from:</p>
+                <div class="providers-grid">
+                    <div class="provider-item" data-provider="npm">
+                        <div class="provider-header">
+                            <span class="provider-badge npm">npm</span>
+                            <div class="toggle-switch">
+                                <input type="checkbox" class="provider-toggle toggle-input" data-provider="npm">
+                                <span class="toggle-slider"></span>
+                            </div>
+                        </div>
+                        <p class="provider-example">e.g. npm install → bun install</p>
+                    </div>
+                    <div class="provider-item" data-provider="yarn">
+                        <div class="provider-header">
+                            <span class="provider-badge yarn">yarn</span>
+                            <div class="toggle-switch">
+                                <input type="checkbox" class="provider-toggle toggle-input" data-provider="yarn">
+                                <span class="toggle-slider"></span>
+                            </div>
+                        </div>
+                        <p class="provider-example">e.g. yarn add → bun add</p>
+                    </div>
+                    <div class="provider-item" data-provider="pnpm">
+                        <div class="provider-header">
+                            <span class="provider-badge pnpm">pnpm</span>
+                            <div class="toggle-switch">
+                                <input type="checkbox" class="provider-toggle toggle-input" data-provider="pnpm">
+                                <span class="toggle-slider"></span>
+                            </div>
+                        </div>
+                        <p class="provider-example">e.g. pnpm install → bun install</p>
+                    </div>
+                    <div class="provider-item" data-provider="npx">
+                        <div class="provider-header">
+                            <span class="provider-badge npx">npx</span>
+                            <div class="toggle-switch">
+                                <input type="checkbox" class="provider-toggle toggle-input" data-provider="npx">
+                                <span class="toggle-slider"></span>
+                            </div>
+                        </div>
+                        <p class="provider-example">e.g. npx package → bunx package</p>
+                    </div>
+                    <div class="provider-item" data-provider="yarn dlx">
+                        <div class="provider-header">
+                            <span class="provider-badge yarn">yarn dlx</span>
+                            <div class="toggle-switch">
+                                <input type="checkbox" class="provider-toggle toggle-input" data-provider="yarn dlx">
+                                <span class="toggle-slider"></span>
+                            </div>
+                        </div>
+                        <p class="provider-example">e.g. yarn dlx package → bunx package</p>
+                    </div>
+                    <div class="provider-item" data-provider="pnpm dlx">
+                        <div class="provider-header">
+                            <span class="provider-badge pnpm">pnpm dlx</span>
+                            <div class="toggle-switch">
+                                <input type="checkbox" class="provider-toggle toggle-input" data-provider="pnpm dlx">
+                                <span class="toggle-slider"></span>
+                            </div>
+                        </div>
+                        <p class="provider-example">e.g. pnpm dlx package → bunx package</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 3: Excluded Sites -->
+            <section class="settings-section">
+                <h2 class="section-title">Excluded Sites</h2>
+                <p class="section-description">Bun Everywhere will not run on these sites.</p>
+                <div class="excluded-sites-form">
+                    <input type="text" id="siteInput" class="site-input" placeholder="example.com">
+                    <button id="addSiteButton" class="add-button">Add Site</button>
+                </div>
+                <div class="excluded-sites-list" id="excludedSitesList">
+                    <div class="empty-state">No sites excluded yet.</div>
+                </div>
+            </section>
+
+            <!-- Section 4: About -->
+            <section class="settings-section">
+                <h2 class="section-title">About</h2>
+                <div class="about-content">
+                    <div class="about-info">
+                        <h3>Bun Everywhere</h3>
+                        <p>Automatically replace npm/yarn/pnpm commands with Bun on any webpage.</p>
+                        <p class="version-info">Version: <span id="aboutVersion">1.0.0</span></p>
+                    </div>
+                    <div class="about-links">
+                        <a href="https://github.com/erbanku/bun-everywhere" target="_blank" class="about-link">
+                            GitHub Repository
+                        </a>
+                        <a href="PRIVACY_POLICY.md" target="_blank" class="about-link">
+                            Privacy Policy
+                        </a>
+                    </div>
+                    <div class="reset-section">
+                        <button id="resetButton" class="reset-button">Reset to Defaults</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Confirmation Modal -->
+        <div class="modal-overlay" id="resetModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3>Reset to Defaults</h3>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to reset all settings to their default values? This action cannot be
+                        undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="modal-button cancel" id="cancelReset">Cancel</button>
+                    <button class="modal-button confirm" id="confirmReset">Reset</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="settings.js"></script>
+</body>
+
+</html>
