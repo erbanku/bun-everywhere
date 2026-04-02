@@ -1,0 +1,68 @@
+# Packs src/ into a signed .crx (CRX v3) and attaches it plus a .zip to a GitHub release.
+# Trigger: Actions -> Release CRX -> Run workflow
+
+name: Release CRX
+
+env:
+    FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+on:
+    workflow_dispatch:
+        inputs:
+            draft:
+                description: Create a draft release (not shown as latest)
+                required: false
+                default: false
+                type: boolean
+
+jobs:
+    release:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v6
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "22"
+
+            - name: Read version from manifest
+              id: ver
+              run: |
+                  VERSION=$(python3 -c 'import json; print(json.load(open("src/manifest.json"))["version"])')
+                  echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+            - name: Write signing key
+              env:
+                  CRX_PRIVATE_KEY: ${{ secrets.CRX_PRIVATE_KEY }}
+              run: |
+                  if [ -z "${CRX_PRIVATE_KEY:-}" ]; then
+                    echo "::error::Repository secret CRX_PRIVATE_KEY is not set."
+                    echo "Generate once: npx crx@5.0.1 keygen path/to/safe/dir --force"
+                    echo "Add the full PEM (including BEGIN/END lines) as CRX_PRIVATE_KEY. Do not commit key.pem."
+                    exit 1
+                  fi
+                  umask 077
+                  printf '%s\n' "$CRX_PRIVATE_KEY" > "$RUNNER_TEMP/key.pem"
+
+            - name: Package zip and CRX
+              run: |
+                  VERSION="${{ steps.ver.outputs.version }}"
+                  mkdir -p dist
+                  ( cd src && zip -r "../dist/bun-everywhere-${VERSION}.zip" . )
+                  npx --yes crx@5.0.1 pack src -o "dist/bun-everywhere-${VERSION}.crx" -p "$RUNNER_TEMP/key.pem"
+
+            - name: Create GitHub release
+              uses: softprops/action-gh-release@v2.6.1
+              with:
+                  tag_name: v${{ steps.ver.outputs.version }}
+                  name: v${{ steps.ver.outputs.version }}
+                  draft: ${{ github.event.inputs.draft == 'true' }}
+                  files: |
+                      dist/bun-everywhere-${{ steps.ver.outputs.version }}.crx
+                      dist/bun-everywhere-${{ steps.ver.outputs.version }}.zip
+                  generate_release_notes: true
+                  target_commitish: ${{ github.sha }}

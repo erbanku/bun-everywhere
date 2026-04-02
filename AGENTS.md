@@ -29,18 +29,17 @@ This document provides AI agents with comprehensive context about the Bun Everyw
 ### File Structure and Responsibilities
 
 ```
-bun-everywhere/
-├── manifest.json           # Extension configuration and permissions
-├── background.js           # Service worker: lifecycle, messaging, icon state
-├── content.js             # Content script: DOM scanning, text replacement, click handlers
-├── settings/              # Full-page settings interface (no popup)
-│   ├── settings.html      # Settings page layout
-│   ├── settings.css       # Settings page styling (responsive)
-│   └── settings.js        # Settings management and UI interactions
-├── icons/                 # Extension icons (16, 48, 128px)
-├── README.md              # User documentation
-├── PRIVACY_POLICY.md      # Privacy compliance documentation
-└── AGENTS.md              # This file - AI agent context
+bun-everywhere-chrome-extension/
+├── src/                    # Packaged extension root (zip/crx contents)
+│   ├── manifest.json       # Extension configuration and permissions
+│   ├── background.js       # Service worker: lifecycle, messaging, icon state
+│   ├── content.js          # Content script: DOM scanning, replacements, click handlers
+│   ├── settings/           # Full-page settings interface (no popup)
+│   └── icons/              # Extension icons (16, 48, 128px)
+├── .github/workflows/      # CI (e.g. release-crx.yml)
+├── docs/                   # Spec, privacy policy copies
+├── README.md
+└── AGENTS.md               # This file - AI agent context
 ```
 
 ### Data Flow Architecture
@@ -297,12 +296,21 @@ Test the extension on these representative sites:
 
 ### Release Process
 
-1. Update version in `manifest.json`
+1. Update version in `src/manifest.json`
 2. Update documentation version numbers
 3. Test thoroughly on multiple sites
-4. Create GitHub release with changelog
-5. Submit to Chrome Web Store
+4. Run the GitHub Action **Release CRX** (manual dispatch) to publish `bun-everywhere-{version}.crx` and `.zip` on a `v{version}` release, or create a release manually
+5. Submit to Chrome Web Store (if applicable)
 6. Update documentation with store link
+
+### GitHub Actions: signed CRX release
+
+Workflow: `.github/workflows/release-crx.yml` (trigger: **workflow_dispatch** only).
+
+- **Permissions:** the `release` job uses `contents: write` to create/update the GitHub release.
+- **Secret:** `CRX_PRIVATE_KEY` — PEM for the extension signing key (full text including `BEGIN`/`END` lines). Generate once with `npx crx@5.0.1 keygen /path/to/dir --force` (produces `key.pem`); store the contents as the repo secret and never commit the key.
+- **Artifacts:** `dist/bun-everywhere-{version}.crx` (CRX v3 via npm `crx@5.0.1`) and `dist/bun-everywhere-{version}.zip` (same contents as `src/`). Release tag and name are `v` plus the version from `src/manifest.json`.
+- **Optional input:** `draft` — create a draft release instead of publishing as latest.
 
 ## Security Considerations
 
