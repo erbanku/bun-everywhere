@@ -23,7 +23,7 @@ Automatically replace npm/yarn/pnpm commands with Bun on any webpage with intell
 ## Installation
 
 ### Chrome Web Store
-[Install from Chrome Web Store](https://chrome.google.com/webstore/detail/bun-everywhere/placeholder) *(coming soon)*
+[Install from Chrome Web Store](https://chromewebstore.google.com/detail/llipopligilgoimdbaoandkdijkgpchm) *(coming soon)*
 
 ### Manual Installation (Developer Mode)
 1. Clone this repository:
