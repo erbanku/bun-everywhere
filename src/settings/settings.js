@@ -217,7 +217,7 @@ function isValidPattern(pattern) {
         const regexBody = pattern.slice(1, lastSlash);
         const flags = pattern.slice(lastSlash + 1);
         if (regexBody.length === 0) return false;
-        new RegExp(regexBody, flags).test('');
+        new RegExp(regexBody, flags);
         return true;
       } catch (_) {
         return false;

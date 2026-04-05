@@ -555,6 +555,8 @@ function isSiteExcluded(hostname, patterns) {
   return patterns.some(pattern => {
     if (!pattern) return false;
     // Regex pattern: /body/ or /body/flags
+    // Note: regex patterns test against the original hostname (case preserved) so that
+    // users can control case-sensitivity explicitly via the 'i' flag.
     if (pattern.startsWith('/')) {
       const lastSlash = pattern.lastIndexOf('/');
       if (lastSlash > 0) {
