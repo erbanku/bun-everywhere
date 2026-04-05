@@ -86,8 +86,8 @@ function shouldProcessElement(element) {
 
   const tagName = element.tagName.toLowerCase();
   // Ensure className is always a string
-  const className = (element.className && typeof element.className.toString === 'function') 
-    ? element.className.toString() 
+  const className = (element.className && typeof element.className.toString === 'function')
+    ? element.className.toString()
     : (element.className || '');
   const role = element.getAttribute('role') || '';
 
@@ -178,7 +178,7 @@ function highlightReplacements(originalText, newText) {
   const lines = newText.split('\n');
   const processedLines = new Array(lines.length).fill(false);
   const result = [];
-  
+
   const bunCommands = [
     /\bbun install\b/, /\bbun add\b/, /\bbun remove\b/, /\bbun run\b/,
     /\bbun test\b/, /\bbun start\b/, /\bbun publish\b/, /\bbun init\b/,
@@ -186,22 +186,22 @@ function highlightReplacements(originalText, newText) {
     /\bbun dev\b/, /\bbun serve\b/, /\bbun clean\b/, /\bbun lock\b/,
     /\bbun upgrade\b/, /\bbun patch\b/, /\bbun major\b/, /\bbun minor\b/
   ];
-  
+
   for (let i = 0; i < lines.length; i++) {
     if (processedLines[i]) {
       result.push(escapeHTML(lines[i]));
       continue;
     }
-    
+
     const line = lines[i];
     const hasBunCommand = bunCommands.some(cmd => cmd.test(line));
-    
+
     if (hasBunCommand) {
       // Look ahead to capture multi-line commands
       const commandLines = [line];
       let endIndex = i;
       let nextIndex = i + 1;
-      
+
       while (nextIndex < lines.length) {
         const trimmedNext = lines[nextIndex].trim();
         if (
@@ -217,17 +217,17 @@ function highlightReplacements(originalText, newText) {
           break;
         }
       }
-      
+
       const fullCommand = commandLines
         .join('\n')
         .trim()
         .replace(/^\$\s+/, '');
       const isMultiLine = commandLines.length > 1;
-      
+
       for (let j = i; j <= endIndex; j++) {
         processedLines[j] = true;
       }
-      
+
       commandLines.forEach((cmdLine, idx) => {
         if (idx === 0) {
           result.push(`<span class="bun-highlighted ${isMultiLine ? 'multiline' : ''}" data-command="${escapeHTML(fullCommand)}">${escapeHTML(cmdLine)}</span>`);
@@ -235,13 +235,13 @@ function highlightReplacements(originalText, newText) {
           result.push(`<span class="bun-highlighted continuation">${escapeHTML(cmdLine)}</span>`);
         }
       });
-      
+
       i = endIndex;
     } else {
       result.push(escapeHTML(line));
     }
   }
-  
+
   return result.join('\n');
 }
 
@@ -277,12 +277,12 @@ function createCopyButton(codeBlock) {
     try {
       const text = codeBlock.textContent || codeBlock.innerText;
       await navigator.clipboard.writeText(text);
-      
+
       // Show success feedback
       button.innerHTML = 'Copied';
       button.style.background = 'linear-gradient(135deg, #10b981, #059669)';
       button.style.boxShadow = '0 2px 8px rgba(16, 185, 129, 0.3)';
-      
+
       setTimeout(() => {
         button.innerHTML = 'Copy';
         button.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
@@ -293,7 +293,7 @@ function createCopyButton(codeBlock) {
       button.innerHTML = 'Failed';
       button.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
       button.style.boxShadow = '0 2px 8px rgba(239, 68, 68, 0.3)';
-      
+
       setTimeout(() => {
         button.innerHTML = 'Copy';
         button.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
@@ -306,92 +306,11 @@ function createCopyButton(codeBlock) {
 }
 
 /**
- * Create a "Go to Bun" button for code blocks with replacements
- * @param {Element} codeBlock - The code block element
- * @returns {HTMLElement} The Go to Bun button element
- */
-function createScrollToButton(codeBlock) {
-  const button = document.createElement('button');
-  button.className = 'bun-scroll-button';
-  button.innerHTML = 'Go to Bun';
-  button.title = 'Scroll to code with Bun replacements';
-  button.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: #f59e0b;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 10px 18px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    z-index: 10000;
-    transition: all 0.2s ease;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  `;
-
-  button.addEventListener('click', () => {
-    codeBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    
-    // Flash the code block to draw attention
-    const originalBg = codeBlock.style.backgroundColor;
-    codeBlock.style.backgroundColor = '#fef3c7';
-    codeBlock.style.transition = 'background-color 0.5s ease';
-    
-    setTimeout(() => {
-      codeBlock.style.backgroundColor = originalBg;
-    }, 1500);
-    
-    // Remove button after clicking
-    button.remove();
-  });
-
-  return button;
-}
-
-/**
- * Add copy button to a code block if it doesn't already have one
- * @param {Element} codeBlock - The code block element
- * @param {boolean} hasReplacements - Whether this block has replacements
- */
-function addCopyButton(codeBlock, hasReplacements = false) {
-  // Copy buttons removed - only add Go to Bun button for replacements
-  
-  // Add scroll-to button if this block has replacements
-  if (hasReplacements) {
-    setTimeout(() => {
-      // Check if scroll-to button already exists
-      if (!document.querySelector('.bun-scroll-button')) {
-        const scrollButton = createScrollToButton(codeBlock);
-        document.body.appendChild(scrollButton);
-      }
-    }, 1000); // Delay to ensure page is stable
-  }
-}
-
-/**
- * Add copy buttons to all code blocks on the page
- */
-function addCopyButtonsToPage() {
-  const codeBlocks = document.querySelectorAll('code, pre, kbd, [role="code"], .highlight, .prism, .hljs, .shiki, .codeblock, .language-, .token, .line, .blob-code, .js-file-line');
-  
-  codeBlocks.forEach(block => {
-    if (shouldProcessElement(block)) {
-      // Check if this block has any highlighted replacements
-      const hasReplacements = block.querySelector('.bun-highlighted') !== null;
-      addCopyButton(block, hasReplacements);
-    }
-  });
-}
-
-/**
  * Add CSS for highlighting
  */
 function addHighlightStyles() {
   if (document.getElementById('bun-highlight-styles')) return;
-  
+
   const style = document.createElement('style');
   style.id = 'bun-highlight-styles';
   style.textContent = `
@@ -408,23 +327,23 @@ function addHighlightStyles() {
       cursor: pointer;
       position: relative;
     }
-    
+
     .bun-highlighted.continuation {
       cursor: default;
       background: rgba(251, 191, 36, 0.08);
       border-bottom: 2px solid #fbbf24;
     }
-    
+
     .bun-highlighted.continuation:hover {
       background: rgba(251, 191, 36, 0.12);
     }
-    
+
     .bun-highlighted:hover {
       background: rgba(251, 191, 36, 0.25);
       border-bottom-color: #d97706;
       transform: translateY(-1px);
     }
-    
+
     .bun-highlighted::after {
       content: 'Click to copy';
       position: absolute;
@@ -441,34 +360,34 @@ function addHighlightStyles() {
       pointer-events: none;
       font-weight: 400;
     }
-    
+
     .bun-highlighted.continuation::after {
       display: none;
     }
-    
+
     .bun-highlighted.multiline::after {
       content: 'Click to copy (multi-line)';
     }
-    
+
     .bun-highlighted:hover::after {
       opacity: 1;
     }
-    
+
     .bun-highlighted.copied {
       background: rgba(16, 185, 129, 0.15);
       border-bottom-color: #10b981;
     }
-    
+
     .bun-highlighted.copied::after {
       content: 'Copied!';
       background: #10b981;
       opacity: 1;
     }
-    
+
     .bun-highlighted.multiline.copied::after {
       content: 'Multi-line copied!';
     }
-    
+
     .bun-scroll-button:hover {
       background: #d97706 !important;
       transform: translateY(-1px) !important;
@@ -551,7 +470,7 @@ async function autoCopyFirstCommand() {
  */
 function addClickHandlers() {
   const highlightedElements = document.querySelectorAll('.bun-highlighted');
-  
+
   highlightedElements.forEach(element => {
     // Remove existing listeners to avoid duplicates
     element.removeEventListener('click', handleCopyClick);
@@ -565,20 +484,20 @@ function addClickHandlers() {
 async function handleCopyClick(event) {
   const element = event.target;
   const command = element.getAttribute('data-command');
-  
+
   if (!command) return;
-  
+
   try {
     await navigator.clipboard.writeText(command);
-    
+
     // Show copied state
     element.classList.add('copied');
-    
+
     // Reset after 2 seconds
     setTimeout(() => {
       element.classList.remove('copied');
     }, 2000);
-    
+
   } catch (error) {
     console.error('Bun Everywhere: Failed to copy command:', error);
   }
@@ -606,9 +525,6 @@ function scanDocument() {
 
   // Add click handlers to highlighted commands
   addClickHandlers();
-
-  // Add copy buttons to all code blocks (now just Go to Bun button)
-  addCopyButtonsToPage();
 
   // Auto-copy first command if setting is enabled
   if (replacementCount > 0 && settings.autoCopyOnLoad) {
@@ -687,7 +603,7 @@ function setupMutationObserver() {
 
   mutationObserver = new MutationObserver((mutations) => {
     let shouldRescan = false;
-    
+
     for (const mutation of mutations) {
       if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
         // Check if any added nodes contain code elements
@@ -731,11 +647,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             parent.replaceChild(document.createTextNode(span.textContent), span);
           }
         });
-        
-        // Remove Go to Bun buttons when disabled
-        document.querySelectorAll('.bun-scroll-button').forEach(button => {
-          button.remove();
-        });
+
+
       }
     });
   }
@@ -746,7 +659,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
  */
 async function initialize() {
   await loadSettings();
-  
+
   if (isEnabled) {
     // Wait for DOM to be fully loaded
     if (document.readyState === 'loading') {
