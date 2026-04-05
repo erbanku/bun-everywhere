@@ -156,9 +156,15 @@
                 <h2 class="section-title">Excluded Sites</h2>
                 <p class="section-description">Bun Everywhere will not run on these sites.</p>
                 <div class="excluded-sites-form">
-                    <input type="text" id="siteInput" class="site-input" placeholder="example.com">
+                    <input type="text" id="siteInput" class="site-input" placeholder="example.com or *.example.com or /regex/">
                     <button id="addSiteButton" class="add-button">Add Site</button>
                 </div>
+                <p class="site-input-hint">
+                    Exact: <code>example.com</code> &nbsp;·&nbsp;
+                    Wildcard: <code>*.example.com</code> &nbsp;·&nbsp;
+                    Regex: <code>/example\.com/i</code>
+                </p>
+                <p id="siteInputMessage" class="site-input-message" hidden></p>
                 <div class="excluded-sites-list" id="excludedSitesList">
                     <div class="empty-state">No sites excluded yet.</div>
                 </div>

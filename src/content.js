@@ -541,6 +541,52 @@ function scanDocument() {
 }
 
 /**
+ * Check whether the given hostname matches any excluded-site pattern.
+ * Supports three formats:
+ *   - Regex:    /pattern/ or /pattern/flags  (e.g. /.*\.example\.com/i)
+ *   - Wildcard: glob with * (e.g. *.example.com, example.*)
+ *   - Exact:    plain hostname string        (e.g. example.com)
+ * @param {string} hostname - The current page's hostname
+ * @param {string[]} patterns - Array of exclusion patterns from settings
+ * @returns {boolean} True if the hostname is excluded
+ */
+function isSiteExcluded(hostname, patterns) {
+  const lowerHostname = hostname.toLowerCase();
+  return patterns.some(pattern => {
+    if (!pattern) return false;
+    // Regex pattern: /body/ or /body/flags
+    // Note: regex patterns test against the original hostname (case preserved) so that
+    // users can control case-sensitivity explicitly via the 'i' flag.
+    if (pattern.startsWith('/')) {
+      const lastSlash = pattern.lastIndexOf('/');
+      if (lastSlash > 0) {
+        try {
+          const regexBody = pattern.slice(1, lastSlash);
+          const flags = pattern.slice(lastSlash + 1);
+          return new RegExp(regexBody, flags).test(hostname);
+        } catch (_) {
+          return false;
+        }
+      }
+    }
+    // Wildcard pattern: * used as glob
+    if (pattern.includes('*')) {
+      try {
+        const escaped = pattern
+          .toLowerCase()
+          .replace(/[.+?^${}()|[\]\\]/g, '\\$&')
+          .replace(/\*/g, '.*');
+        return new RegExp('^' + escaped + '$').test(lowerHostname);
+      } catch (_) {
+        return false;
+      }
+    }
+    // Exact match (case-insensitive)
+    return pattern.toLowerCase() === lowerHostname;
+  });
+}
+
+/**
  * Load settings from storage
  */
 async function loadSettings() {
@@ -570,7 +616,7 @@ async function loadSettings() {
       autoCopyOnLoad: result.autoCopyOnLoad !== false,
     };
 
-    isEnabled = settings.globalEnabled && !settings.excludedSites.includes(window.location.hostname);
+    isEnabled = settings.globalEnabled && !isSiteExcluded(window.location.hostname, settings.excludedSites);
   } catch (error) {
     console.error('Bun Everywhere: Failed to load settings:', error);
     // Use defaults on error

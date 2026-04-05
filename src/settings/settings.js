@@ -187,55 +187,98 @@ function updateExcludedSitesList() {
 }
 
 /**
- * Validate hostname format
- * @param {string} hostname - Hostname to validate
- * @returns {boolean} True if valid hostname
+ * Validate a plain hostname string (no wildcards, no protocols).
+ * @param {string} hostname
+ * @returns {boolean}
  */
 function isValidHostname(hostname) {
   if (!hostname || hostname.length === 0) return false;
-  
-  // Remove protocol and www if present
-  hostname = hostname.replace(/^https?:\/\//, '').replace(/^www\./, '');
-  
-  // Basic hostname validation
   const hostnameRegex = /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
   return hostnameRegex.test(hostname) && hostname.length <= 253;
+}
+
+/**
+ * Validate an exclusion pattern.
+ * Accepts:
+ *   - Plain hostnames:   example.com
+ *   - Wildcard globs:    *.example.com  or  example.*
+ *   - Regex literals:    /pattern/  or  /pattern/flags
+ * @param {string} pattern - Pattern to validate
+ * @returns {boolean} True if valid
+ */
+function isValidPattern(pattern) {
+  if (!pattern || pattern.length === 0) return false;
+
+  // Regex literal: /body/ or /body/flags
+  if (pattern.startsWith('/')) {
+    const lastSlash = pattern.lastIndexOf('/');
+    if (lastSlash > 0) {
+      try {
+        const regexBody = pattern.slice(1, lastSlash);
+        const flags = pattern.slice(lastSlash + 1);
+        if (regexBody.length === 0) return false;
+        new RegExp(regexBody, flags);
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+    return false;
+  }
+
+  // Strip protocol if accidentally included
+  const stripped = pattern.replace(/^https?:\/\//, '');
+
+  // Wildcard glob: replace * with a placeholder and validate the rest as a hostname
+  if (stripped.includes('*')) {
+    const placeholder = stripped.replace(/\*/g, 'x');
+    return isValidHostname(placeholder);
+  }
+
+  // Plain hostname
+  return isValidHostname(stripped);
 }
 
 /**
  * Add a site to excluded sites list
  */
 async function addExcludedSite() {
-  const hostname = siteInput.value.trim();
-  
-  if (!hostname) {
+  const raw = siteInput.value.trim();
+
+  if (!raw) {
     siteInput.focus();
     return;
   }
 
-  if (!isValidHostname(hostname)) {
-    showMessage('Please enter a valid hostname (e.g., example.com)');
+  if (!isValidPattern(raw)) {
+    showMessage('Please enter a valid hostname, wildcard (e.g. *.example.com), or regex (e.g. /example\\.com/i)', 'error');
     siteInput.focus();
     return;
   }
 
-  // Clean hostname
-  const cleanHostname = hostname.replace(/^https?:\/\//, '').replace(/^www\./, '');
+  // Strip protocol prefix if accidentally typed (keep everything else, including www.)
+  const pattern = raw.startsWith('/') ? raw : raw.replace(/^https?:\/\//, '');
 
-  if (currentSettings.excludedSites.includes(cleanHostname)) {
-    showMessage('This site is already excluded');
+  if (currentSettings.excludedSites.some(s => {
+    // Regex patterns are compared exactly (case matters in regex body/flags)
+    if (pattern.startsWith('/')) return s === pattern;
+    // Hostname patterns are compared case-insensitively
+    return s.toLowerCase() === pattern.toLowerCase();
+  })) {
+    showMessage('This pattern is already excluded', 'info');
     return;
   }
 
   try {
-    currentSettings.excludedSites.push(cleanHostname);
+    currentSettings.excludedSites.push(pattern);
     await saveSettings();
     updateExcludedSitesList();
     siteInput.value = '';
     siteInput.focus();
+    showMessage('');
   } catch (error) {
     console.error('Bun Everywhere: Failed to add excluded site:', error);
-    showMessage('Failed to add site');
+    showMessage('Failed to add site', 'error');
   }
 }
 
@@ -250,17 +293,21 @@ async function removeExcludedSite(hostname) {
     updateExcludedSitesList();
   } catch (error) {
     console.error('Bun Everywhere: Failed to remove excluded site:', error);
-    showMessage('Failed to remove site');
+    showMessage('Failed to remove site', 'error');
   }
 }
 
 /**
- * Show a temporary message (could be enhanced with a toast notification)
- * @param {string} message - Message to show
+ * Show a message near the site input field.
+ * @param {string} message - Text to display (empty string clears the message)
+ * @param {'error'|'info'|''} [type=''] - Visual style
  */
-function showMessage(message) {
-  // Simple implementation - could be enhanced with a toast
-  console.log('Bun Everywhere:', message);
+function showMessage(message, type = '') {
+  const el = document.getElementById('siteInputMessage');
+  if (!el) return;
+  el.textContent = message;
+  el.className = 'site-input-message' + (type ? ` site-input-message--${type}` : '');
+  el.hidden = !message;
 }
 
 /**

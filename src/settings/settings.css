@@ -48,6 +48,30 @@ body {
   .site-input::placeholder {
     color: #9ca3af;
   }
+
+  .site-input-hint {
+    color: #6b7280;
+  }
+
+  .site-input-hint code {
+    background: #374151;
+    color: #d1d5db;
+  }
+
+  .site-input-message {
+    background: #374151;
+    color: #d1d5db;
+  }
+
+  .site-input-message--error {
+    background: #450a0a;
+    color: #fca5a5;
+  }
+
+  .site-input-message--info {
+    background: #451a03;
+    color: #fcd34d;
+  }
   
   .excluded-site-item {
     background: #374151;
@@ -293,7 +317,39 @@ body {
 .excluded-sites-form {
   display: flex;
   gap: 8px;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
+}
+
+.site-input-hint {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-bottom: 8px;
+}
+
+.site-input-hint code {
+  font-family: 'Monaco', 'Menlo', monospace;
+  background: #f3f4f6;
+  border-radius: 3px;
+  padding: 1px 4px;
+}
+
+.site-input-message {
+  font-size: 13px;
+  margin-bottom: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.site-input-message--error {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.site-input-message--info {
+  background: #fffbeb;
+  color: #92400e;
 }
 
 .site-input {
